@@ -285,6 +285,98 @@ CHARS = {
                  "weights":HP_SUP_W,
                  "good_main":{"desire":"HP%","imagination":"DEF%"},
                  "goal":"Agony support"},
+    # ── New characters ────────────────────────────────────────────────────────
+    # Amir — DEF-scaler (Metalization), 301 DEF goal
+    "Amir":     {"sets":["Conqueror's Aspect","Tetra's Authority","Executioner's Tool",
+                         "Blackwing","Cursed Corpse"],
+                 "weights":{"Crit Rate%":0.75,"Crit DMG%":0.75,"DEF":1.0,"DEF%":0.8,
+                             "ATK":0.1,"ATK%":0.1,"HP":0.0,"HP%":0.0,"EGO Recovery":0.3,
+                             "DoT%":0.0,"Extra DMG%":0.0},
+                 "good_main":{"desire":"Void DMG%","imagination":"DEF%"},
+                 "goal":"301 DEF · Metalization build"},
+    # Diana — new Void DPS
+    "Diana":    {"sets":["Orb of Inhibition","Conqueror's Aspect","Executioner's Tool",
+                         "Blackwing","Offering of the Void"],
+                 "weights":CRIT_DPS,
+                 "good_main":{"desire":"Void DMG%","imagination":"Crit Rate%"},
+                 "goal":"Void Discard DPS"},
+    # Haru — Justice Crit DPS
+    "Haru":     {"sets":["Line of Justice","Conqueror's Aspect","Executioner's Tool","Blackwing"],
+                 "weights":CRIT_DPS,
+                 "good_main":{"desire":"Justice DMG%","imagination":"Crit Rate%"},
+                 "goal":"Justice Crit DPS"},
+    # Kayron — Void DoT DPS
+    "Kayron":   {"sets":["Offering of the Void","Orb of Inhibition","Cursed Corpse",
+                         "Executioner's Tool","Blackwing"],
+                 "weights":{"Crit Rate%":0.75,"Crit DMG%":0.75,"DoT%":1.0,"Extra DMG%":0.5,
+                             "ATK":0.3,"ATK%":0.3,"DEF":0.0,"DEF%":0.0,"HP":0.0,
+                             "HP%":0.0,"EGO Recovery":0.0},
+                 "good_main":{"desire":"Void DMG%","imagination":"Crit Rate%"},
+                 "goal":"Void DoT DPS"},
+    # Lucas — Agony/DoT sub-DPS
+    "Lucas":    {"sets":["Cursed Corpse","Conqueror's Aspect","Executioner's Tool","Seth's Scarab"],
+                 "weights":{"Crit Rate%":0.75,"Crit DMG%":0.75,"DoT%":0.75,"ATK":0.4,
+                             "ATK%":0.4,"DEF":0.0,"DEF%":0.0,"HP":0.0,"HP%":0.0,
+                             "EGO Recovery":0.0,"Extra DMG%":0.0},
+                 "good_main":{"desire":"Order DMG%","imagination":"Crit Rate%"},
+                 "goal":"Agony sub-DPS"},
+    # Luke — Order Bullet DPS
+    "Luke":     {"sets":["Bullet of Order","Line of Justice","Executioner's Tool","Blackwing"],
+                 "weights":CRIT_DPS,
+                 "good_main":{"desire":"Order DMG%","imagination":"Crit Rate%"},
+                 "goal":"Order Bullet DPS"},
+    # Magna — Shield/Counter Support-DPS
+    "Magna":    {"sets":["Tetra's Authority","Conqueror's Aspect","Executioner's Tool","Blackwing"],
+                 "weights":{"DEF":1.0,"DEF%":0.8,"Crit Rate%":0.6,"Crit DMG%":0.6,
+                             "HP":0.2,"HP%":0.2,"ATK":0.0,"ATK%":0.0,"EGO Recovery":0.2,
+                             "DoT%":0.0,"Extra DMG%":0.0},
+                 "good_main":{"desire":"Void DMG%","imagination":"DEF%"},
+                 "goal":"DEF + Crit Counter build"},
+    # Maribell — Shield/DPS (scales off team shields)
+    "Maribell": {"sets":["Tetra's Authority","Spark of Passion","Executioner's Tool","Blackwing"],
+                 "weights":{"DEF":0.8,"DEF%":0.7,"Crit Rate%":0.7,"Crit DMG%":0.7,
+                             "HP":0.1,"HP%":0.1,"ATK":0.1,"ATK%":0.1,"EGO Recovery":0.2,
+                             "DoT%":0.0,"Extra DMG%":0.0},
+                 "good_main":{"desire":"Passion DMG%","imagination":"DEF%"},
+                 "goal":"Shield-scaling DPS"},
+    # Mei Lin — Passion DPS
+    "Mei Lin":  {"sets":["Spark of Passion","Executioner's Tool","Blackwing","Conqueror's Aspect"],
+                 "weights":CRIT_DPS,
+                 "good_main":{"desire":"Passion DMG%","imagination":"Crit Rate%"},
+                 "goal":"Passion Upgrade DPS"},
+    # Narja — AP Support
+    "Narja":    {"sets":["Tetra's Authority","Healer's Journey","Seth's Scarab"],
+                 "weights":HP_SUP_W,
+                 "good_main":{"desire":"HP%","imagination":"DEF%"},
+                 "goal":"AP cost reduction support"},
+    # Nia — Draw/Discard Support
+    "Nia":      {"sets":["Healer's Journey","Tetra's Authority","Seth's Scarab"],
+                 "weights":HP_SUP_W,
+                 "good_main":{"desire":"HP%","imagination":"DEF%"},
+                 "goal":"Draw/Discard engine support"},
+    # Owen — Heal Support
+    "Owen":     {"sets":["Healer's Journey","Tetra's Authority","Seth's Scarab","Glory's Reign"],
+                 "weights":HP_SUP_W,
+                 "good_main":{"desire":"HP%","imagination":"DEF%"},
+                 "goal":"Heal support"},
+    # Rei — Morale/1-cost Support-DPS
+    "Rei":      {"sets":["Offering of the Void","Cursed Corpse","Executioner's Tool",
+                         "Seth's Scarab","Healer's Journey"],
+                 "weights":{"Crit Rate%":0.6,"Crit DMG%":0.6,"DEF":0.5,"DEF%":0.5,
+                             "HP":0.5,"HP%":0.5,"ATK":0.2,"ATK%":0.2,"EGO Recovery":0.4,
+                             "DoT%":0.0,"Extra DMG%":0.0},
+                 "good_main":{"desire":"Void DMG%","imagination":"DEF%"},
+                 "goal":"Morale support / sub-DPS"},
+    # Rita — Instinct DPS (new)
+    "Rita":     {"sets":["Instinctual Growth","Judgment's Flames","Executioner's Tool","Blackwing"],
+                 "weights":CRIT_DPS,
+                 "good_main":{"desire":"Instinct DMG%","imagination":"Crit Rate%"},
+                 "goal":"Instinct DPS"},
+    # Yuki — Order DPS
+    "Yuki":     {"sets":["Bullet of Order","Line of Justice","Executioner's Tool","Blackwing"],
+                 "weights":CRIT_DPS,
+                 "good_main":{"desire":"Order DMG%","imagination":"Crit Rate%"},
+                 "goal":"Order DPS"},
 }
 
 SET_TO_CHARS = {}  # dict[str, list[str]]
