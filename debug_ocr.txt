@@ -1,0 +1,33 @@
+a
+LEGENDARY x
+& Orb of Inhibition Imagination
+Defense 11%
+| Attack +7
+Defense +3 i
+. Health 0.9% |
+Health +12
+Set Effect
+fl Orb of Inhibition
+\
+&) Orb of Inhibition Imagination
+| Defense 11%
+a Attack +]
+: Defense +3
+Pi | Health 0.9%
+| | Orb of Inhibition
+LEGENDARY xX
+«5 Orb of Inhibition Imagination
+Defense 11% |
+| Attack +7 |
+- Defense +3 :
+. Health 0.9% !
+Il Orb of Inhibition
+LEGENDARY
+Defense
+11%
+Attack
+Health
+0.9%
++12
+| _ Orb of Inhibition
+_—— a
