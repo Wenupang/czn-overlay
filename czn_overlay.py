@@ -571,15 +571,27 @@ def parse_fragment(text: str) -> dict:
         if not r["set"]:
             r["set"] = find_set(line)
             if r["set"] and not r["slot"]:
-                # Try to extract slot from the same title line
                 r["slot"] = find_slot_from_title(line)
-        if not r["slot"]:  r["slot"]  = find_slot(line)
+        elif not r["slot"]:
+            # Try title-based detection on every line even after set is found
+            if not find_set(line) is None or True:
+                s = find_slot_from_title(line)
+                if s: r["slot"] = s
+        if not r["slot"]:  r["slot"] = find_slot(line)
         if not r["rarity"]:
             for x in ["legendary","epic","rare","common"]:
                 if x in line.lower(): r["rarity"]=x.title(); break
         if not r["upgrade"]:
             m = re.search(r'\+(\d)\b',line)
             if m: r["upgrade"]="+"+m.group(1)
+
+    # Override: if title-based slot was found, always use it
+    # It's more reliable than the OCR label (which can pick up the overlay window)
+    for line in lines:
+        s = find_slot_from_title(line)
+        if s:
+            r["slot"] = s
+            break
 
     seen, entries = set(), []
     for line in lines:
