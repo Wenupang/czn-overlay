@@ -794,16 +794,30 @@ class CZNOverlay:
     def _scan(self):
         if self._oval_id:
             self.root.after(0, lambda: self._cv.itemconfig(self._oval_id, fill="#1a4080"))
+
+        # Hide overlay button AND previous result window before scanning
+        # so they don't appear in the OCR screenshot
+        def _hide():
+            self.root.withdraw()
+            if self._rwin and self._rwin.winfo_exists():
+                self._rwin.withdraw()
+
+        def _show_btn():
+            self.root.deiconify()
+            self.root.lift()
+            if self._oval_id:
+                self._cv.itemconfig(self._oval_id, fill=C["p1_bg"])
+
+        self.root.after(0, _hide)
+        # Wait 120ms for the window to actually disappear before grabbing screen
+        import time; time.sleep(0.15)
+
         try:
             sw, sh = pyautogui.size()
-
-            # Scan right 55% of screen, skip bottom 15% (fragment thumbnails row)
-            # The detail panel is always on the right side of the screen
-            # Skipping the bottom avoids picking up thumbnail text and the overlay itself
             x1 = int(sw * 0.38)
             y1 = int(sh * 0.03)
             x2 = int(sw * 0.98)
-            y2 = int(sh * 0.83)  # cut off thumbnail strip at bottom
+            y2 = int(sh * 0.83)
 
             img = ImageGrab.grab(bbox=(x1, y1, x2, y2))
             base = os.path.dirname(__file__)
@@ -813,12 +827,11 @@ class CZNOverlay:
                 fh.write(ocr)
             frag = parse_fragment(ocr); frag["ocr_raw"] = ocr
             res  = score_fragment(frag)
+            self.root.after(0, _show_btn)
             self.root.after(0, lambda: self._show(frag, res))
         except Exception as ex:
+            self.root.after(0, _show_btn)
             self.root.after(0, lambda: self._err(str(ex)))
-        finally:
-            if self._oval_id:
-                self.root.after(0, lambda: self._cv.itemconfig(self._oval_id, fill=C["p1_bg"]))
 
     def _show(self,frag,res):
         if self._rwin and self._rwin.winfo_exists():
@@ -826,7 +839,18 @@ class CZNOverlay:
         win=tk.Toplevel(self.root)
         win.overrideredirect(True); win.attributes("-topmost",True)
         win.attributes("-alpha",0.96); win.configure(bg=C["bg"])
-        f=tk.Frame(win,bg=C["bg"],padx=14,pady=12); f.pack(fill="both",expand=True)
+
+        # Make window draggable
+        win._dx = 0; win._dy = 0
+        def _start_drag(e):
+            win._dx = e.x_root - win.winfo_x()
+            win._dy = e.y_root - win.winfo_y()
+        def _do_drag(e):
+            win.geometry(f"+{e.x_root - win._dx}+{e.y_root - win._dy}")
+        win.bind("<ButtonPress-1>", _start_drag)
+        win.bind("<B1-Motion>",     _do_drag)
+
+        f=tk.Frame(win,bg=C["bg"],padx=14,pady=10); f.pack(fill="both",expand=True)
 
         # ── Header ──
         hdr=tk.Frame(f,bg=C["bg"]); hdr.pack(fill="x",pady=(0,6))
@@ -907,30 +931,94 @@ class CZNOverlay:
             tk.Label(f,text="→ debug_scan.png + debug_ocr.txt saved",
                      bg=C["bg"],fg=C["muted"],font=("Segoe UI",7)).pack(anchor="w",pady=(2,0))
 
-        # ── Per-character scores ──
+        # ── Per-character scores (collapsible) ──
         char_scores = res.get("char_scores", [])
         best_char   = res.get("best_char")
         if char_scores:
-            tk.Frame(f, bg=C["border"], height=1).pack(fill="x", pady=(6,4))
-            # Best char highlighted, rest smaller
-            for cs in char_scores:
-                cr = tk.Frame(f, bg=C["bg"]); cr.pack(fill="x", pady=1)
-                is_best = cs["char"] == best_char
-                # Score badge
-                if cs["score"] >= 55:   sbg,sfg = C["p1_bg"],C["p1_fg"]
-                elif cs["score"] >= 38: sbg,sfg = C["p2_bg"],C["p2_fg"]
-                else:                   sbg,sfg = C["bad_bg"],C["bad_fg"]
-                tk.Label(cr, text=f"{cs['score']}%", bg=sbg, fg=sfg,
-                         font=("Segoe UI", 8 if is_best else 7, "bold"),
-                         width=5, padx=2).pack(side="left")
-                tk.Label(cr, text=f"  {cs['char']}",
-                         bg=C["bg"],
-                         fg=C["text"] if is_best else C["muted"],
-                         font=("Segoe UI", 10 if is_best else 9,
-                               "bold" if is_best else "normal")).pack(side="left")
-                if cs.get("main_ok") is False:
-                    tk.Label(cr, text="main ✗", bg=C["bg"], fg=C["main_bad_fg"],
-                             font=("Segoe UI",8)).pack(side="right")
+            tk.Frame(f, bg=C["border"], height=1).pack(fill="x", pady=(6,3))
+
+            # Always show best char
+            best_cs = char_scores[0]
+            cr = tk.Frame(f, bg=C["bg"]); cr.pack(fill="x", pady=1)
+            if best_cs["score"] >= 55:   sbg,sfg = C["p1_bg"],C["p1_fg"]
+            elif best_cs["score"] >= 38: sbg,sfg = C["p2_bg"],C["p2_fg"]
+            else:                        sbg,sfg = C["bad_bg"],C["bad_fg"]
+            tk.Label(cr, text=f"{best_cs['score']}%", bg=sbg, fg=sfg,
+                     font=("Segoe UI",9,"bold"), width=5, padx=2).pack(side="left")
+            tk.Label(cr, text=f"  {best_cs['char']}",
+                     bg=C["bg"], fg=C["text"],
+                     font=("Segoe UI",10,"bold")).pack(side="left")
+            if best_cs.get("main_ok") is False:
+                tk.Label(cr, text="main ✗", bg=C["bg"], fg=C["main_bad_fg"],
+                         font=("Segoe UI",8)).pack(side="right")
+
+            # Remaining chars — collapsible
+            rest = char_scores[1:]
+            if rest:
+                # Container for collapsed chars (hidden by default)
+                collapse_frame = tk.Frame(f, bg=C["bg"])
+
+                for cs in rest:
+                    cr2 = tk.Frame(collapse_frame, bg=C["bg"])
+                    cr2.pack(fill="x", pady=1)
+                    if cs["score"] >= 55:   sbg2,sfg2 = C["p1_bg"],C["p1_fg"]
+                    elif cs["score"] >= 38: sbg2,sfg2 = C["p2_bg"],C["p2_fg"]
+                    else:                   sbg2,sfg2 = C["bad_bg"],C["bad_fg"]
+                    tk.Label(cr2, text=f"{cs['score']}%", bg=sbg2, fg=sfg2,
+                             font=("Segoe UI",7,"bold"), width=5, padx=2).pack(side="left")
+                    tk.Label(cr2, text=f"  {cs['char']}",
+                             bg=C["bg"], fg=C["muted"],
+                             font=("Segoe UI",9)).pack(side="left")
+                    if cs.get("main_ok") is False:
+                        tk.Label(cr2, text="main ✗", bg=C["bg"], fg=C["main_bad_fg"],
+                                 font=("Segoe UI",7)).pack(side="right")
+
+                # Toggle button
+                toggle_var = tk.BooleanVar(value=False)
+                def _toggle(cf=collapse_frame, tv=toggle_var, btn_ref=[None],
+                             win_ref=win):
+                    tv.set(not tv.get())
+                    if tv.get():
+                        cf.pack(fill="x", after=cr)
+                        if btn_ref[0]: btn_ref[0].config(text=f"▲ hide {len(rest)} more")
+                    else:
+                        cf.pack_forget()
+                        if btn_ref[0]: btn_ref[0].config(text=f"▼ +{len(rest)} more")
+                    win_ref.update_idletasks()
+                    # Reposition window if it grows/shrinks
+                    bx2,by2 = self.root.winfo_x(),self.root.winfo_y()
+                    sw2,_ = pyautogui.size()
+                    wx2 = bx2-win_ref.winfo_width()-8 if bx2>sw2//2 else bx2+self.SZ+8
+                    win_ref.geometry(f"+{wx2}+{max(10,by2-80)}")
+
+                toggle_btn = tk.Button(f, text=f"▼ +{len(rest)} more",
+                                       command=_toggle,
+                                       bg=C["bg"], fg=C["muted"],
+                                       relief="flat", font=("Segoe UI",8),
+                                       cursor="hand2", bd=0, pady=0)
+                toggle_btn.pack(anchor="w", padx=2)
+                toggle_var._btn = toggle_btn  # keep ref
+                # Store btn ref for toggle
+                _toggle.__defaults__[3].__class__  # dummy
+                # Patch: give toggle access to button
+                def make_toggle(cf, tv, btn_holder, win_ref, n):
+                    def _t():
+                        tv.set(not tv.get())
+                        if tv.get():
+                            cf.pack(fill="x")
+                            btn_holder[0].config(text=f"▲ hide {n} more")
+                        else:
+                            cf.pack_forget()
+                            btn_holder[0].config(text=f"▼ +{n} more")
+                        win_ref.update_idletasks()
+                        bx2,by2 = self.root.winfo_x(),self.root.winfo_y()
+                        sw2,_ = pyautogui.size()
+                        wx2 = bx2-win_ref.winfo_width()-8 if bx2>sw2//2 else bx2+self.SZ+8
+                        win_ref.geometry(f"+{wx2}+{max(10,by2-80)}")
+                    return _t
+                btn_holder = [toggle_btn]
+                toggle_btn.config(command=make_toggle(
+                    collapse_frame, toggle_var, btn_holder, win, len(rest)))
 
         # ── Close ──
         tk.Frame(f,bg=C["border"],height=1).pack(fill="x",pady=(8,3))
@@ -938,10 +1026,21 @@ class CZNOverlay:
                   relief="flat",font=("Segoe UI",9),cursor="hand2",bd=0).pack(side="right")
 
         win.update_idletasks()
-        bx,by=self.root.winfo_x(),self.root.winfo_y()
-        sw,_=pyautogui.size()
-        wx=bx-win.winfo_width()-8 if bx>sw//2 else bx+self.SZ+8
-        win.geometry(f"+{wx}+{max(10,by-80)}")
+        sw, sh = pyautogui.size()
+        bx, by = self.root.winfo_x(), self.root.winfo_y()
+        ww, wh = win.winfo_width(), win.winfo_height()
+
+        # Horizontal: left of button if button is on right half, else right
+        wx = bx - ww - 8 if bx > sw // 2 else bx + self.SZ + 8
+        wx = max(0, min(wx, sw - ww - 4))
+
+        # Vertical: align with button top, but shift up if window would be cut off
+        wy = by - 80
+        if wy + wh > sh - 40:        # would go below taskbar
+            wy = sh - wh - 44        # pin to bottom with margin
+        wy = max(0, wy)
+
+        win.geometry(f"+{wx}+{wy}")
         self._rwin=win
 
     def _err(self,msg):
