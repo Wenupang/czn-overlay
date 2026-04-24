@@ -413,12 +413,23 @@ class CZNOverlay:
                          font=("Segoe UI",10)).pack(side="left")
                 ir = tk.Frame(row, bg=C["bg"]); ir.pack(side="right")
                 g  = cs["grade"] if cs["is_maxed"] else cs["best_grade"]
-                s2 = cs["score"] if cs["is_maxed"] else cs["max_score"]
-                c2 = C["a"] if s2>=43 else C["b"] if s2>=30 else C["c"]
+                s_now = cs["score"]
+                s_max = cs["max_score"]
+                c2 = C["a"] if s_max>=43 else C["b"] if s_max>=30 else C["c"]
                 tk.Label(ir, text=g, bg=cs["color"], fg=C["bg"],
                          font=("Segoe UI",8,"bold"), padx=4).pack(side="right", padx=(2,0))
-                tk.Label(ir, text=f"{s2:.0f}", bg=C["bg"], fg=c2,
-                         font=("Segoe UI",9,"bold")).pack(side="right", padx=(0,2))
+                if cs["is_maxed"]:
+                    # +5: only current score
+                    tk.Label(ir, text=f"{s_now:.0f}", bg=C["bg"], fg=c2,
+                             font=("Segoe UI",9,"bold")).pack(side="right", padx=(0,2))
+                else:
+                    # not maxed: show now → max
+                    tk.Label(ir, text=f"{s_max:.0f}", bg=C["bg"], fg=c2,
+                             font=("Segoe UI",9,"bold")).pack(side="right")
+                    tk.Label(ir, text="→", bg=C["bg"], fg=C["muted"],
+                             font=("Segoe UI",8)).pack(side="right", padx=1)
+                    tk.Label(ir, text=f"{s_now:.0f}", bg=C["bg"], fg=C["muted"],
+                             font=("Segoe UI",9)).pack(side="right", padx=(0,1))
             if hid:
                 tk.Label(lst, text=f"+ {len(hid)} below C",
                          bg=C["bg"], fg=C["bad_fg"], font=("Segoe UI",8)).pack(anchor="w")
