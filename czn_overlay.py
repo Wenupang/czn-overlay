@@ -369,6 +369,12 @@ class CZNOverlay:
                 vfg = C["p1_fg"] if verd=="Keep" else C["p2_fg"] if verd=="Maybe" else C["bad_fg"]
                 tk.Label(h, text=verd, bg=vbg, fg=vfg,
                          font=("Segoe UI",8,"bold"), padx=6).pack(side="right")
+                if prim_cs.get("main_ok") is False:
+                    tk.Label(h, text="Main ✗", bg="#1a1f28", fg=C["main_bad_fg"],
+                             font=("Segoe UI",8)).pack(side="right", padx=(0,4))
+                elif prim_cs.get("main_ok") is True:
+                    tk.Label(h, text="Main ✓", bg="#1a1f28", fg=C["main_ok_fg"],
+                             font=("Segoe UI",8)).pack(side="right", padx=(0,4))
                 sc = tk.Frame(pf, bg="#1a1f28"); sc.pack(fill="x", pady=(6,0))
                 g2 = prim_cs["grade"] if prim_cs["is_maxed"] else prim_cs["best_grade"]
                 tk.Label(sc, text=g2, bg=prim_cs["color"], fg=C["bg"],
@@ -419,17 +425,22 @@ class CZNOverlay:
                 tk.Label(ir, text=g, bg=cs["color"], fg=C["bg"],
                          font=("Segoe UI",8,"bold"), padx=4).pack(side="right", padx=(2,0))
                 if cs["is_maxed"]:
-                    # +5: only current score
                     tk.Label(ir, text=f"{s_now:.0f}", bg=C["bg"], fg=c2,
                              font=("Segoe UI",9,"bold")).pack(side="right", padx=(0,2))
                 else:
-                    # not maxed: show now → max
                     tk.Label(ir, text=f"{s_max:.0f}", bg=C["bg"], fg=c2,
                              font=("Segoe UI",9,"bold")).pack(side="right")
                     tk.Label(ir, text="→", bg=C["bg"], fg=C["muted"],
                              font=("Segoe UI",8)).pack(side="right", padx=1)
                     tk.Label(ir, text=f"{s_now:.0f}", bg=C["bg"], fg=C["muted"],
                              font=("Segoe UI",9)).pack(side="right", padx=(0,1))
+                # Main stat indicator
+                if cs.get("main_ok") is False:
+                    tk.Label(ir, text="M✗", bg=C["bg"], fg=C["main_bad_fg"],
+                             font=("Segoe UI",8)).pack(side="right", padx=(0,3))
+                elif cs.get("main_ok") is True:
+                    tk.Label(ir, text="M✓", bg=C["bg"], fg=C["main_ok_fg"],
+                             font=("Segoe UI",8)).pack(side="right", padx=(0,3))
             if hid:
                 tk.Label(lst, text=f"+ {len(hid)} below C",
                          bg=C["bg"], fg=C["bad_fg"], font=("Segoe UI",8)).pack(anchor="w")
